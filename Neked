@@ -1,0 +1,250 @@
+-- GEF Script Menu (Rayfield Edition)
+-- By Neked
+
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+
+-- Переменные
+local infJump = false
+local fullBright = false
+local autoFarmMoney = false
+
+-- ⚡ Окно
+local Window = Rayfield:CreateWindow({
+    Name = "GEF Script Menu",
+    LoadingTitle = "GEF Script",
+    LoadingSubtitle = "By Neked",
+})
+
+-- ========== PLAYER ==========
+local Tab1 = Window:CreateTab("Player")
+
+-- Inf Jump
+Tab1:CreateToggle({
+    Name = "Inf Jump",
+    CurrentValue = false,
+    Callback = function(Value) infJump = Value end,
+})
+
+-- FullBright (loop 0.01s)
+Tab1:CreateToggle({
+    Name = "FullBright",
+    CurrentValue = false,
+    Callback = function(Value)
+        fullBright = Value
+        if Value then
+            task.spawn(function()
+                while fullBright do
+                    pcall(function()
+                        game.Lighting.Brightness = 2
+                        game.Lighting.ClockTime = 14
+                        game.Lighting.FogEnd = 1e6
+                        game.Lighting.GlobalShadows = false
+                        game.Lighting.OutdoorAmbient = Color3.fromRGB(128,128,128)
+                    end)
+                    task.wait(0.01)
+                end
+            end)
+        end
+    end,
+})
+
+-- JumpPower
+Tab1:CreateSlider({
+    Name = "JumpPower",
+    Range = {1, 150},
+    Increment = 1,
+    CurrentValue = 50,
+    Callback = function(Value)
+        task.spawn(function()
+            while task.wait(0.2) do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").JumpPower = Value
+                end
+            end
+        end)
+    end,
+})
+
+-- Auto Use Items
+Tab1:CreateToggle({
+    Name = "Auto Use Items",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            task.spawn(function()
+                while Value do
+                    pcall(function()
+                        Instance.new("RemoteEvent", nil):FireServer()
+                    end)
+                    task.wait(1)
+                end
+            end)
+        end
+    end,
+})
+
+-- TP Tool
+Tab1:CreateButton({
+    Name = "Выдать TP Tool",
+    Callback = function()
+        local tool = Instance.new("Tool")
+        tool.RequiresHandle = false
+        tool.CanBeDropped = false
+        tool.Name = "TP Tool"
+
+        tool.Activated:Connect(function()
+            local mouse = LocalPlayer:GetMouse()
+            if mouse.Hit and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p + Vector3.new(0, 3, 0))
+            end
+        end)
+
+        tool.Parent = LocalPlayer.Backpack
+    end,
+})
+
+-- GodMode
+Tab1:CreateButton({
+    Name = "GodMode (Удалить GEFs)",
+    Callback = function()
+        if Workspace:FindFirstChild("GEFs") then Workspace.GEFs:Destroy() end
+    end,
+})
+
+-- Infinity Jump
+UserInputService.JumpRequest:Connect(function()
+    if infJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
+
+-- ========== ITEMS ==========
+local Tab2 = Window:CreateTab("Items")
+
+local itemsList = {"Bat","Crowbar","Food","Hammer","Handgun","Lantern","Medkit","Money","Shells","Soda","Bullets"}
+
+for _, itemName in ipairs(itemsList) do
+    Tab2:CreateButton({
+        Name = "TP Random " .. itemName,
+        Callback = function()
+            if Workspace:FindFirstChild("Pickups") then
+                local candidates = {}
+                for _, v in pairs(Workspace.Pickups:GetChildren()) do
+                    if v.Name == itemName then
+                        table.insert(candidates, v)
+                    end
+                end
+                if #candidates > 0 then
+                    local target = candidates[math.random(1, #candidates)]
+                    local pos
+                    if target:IsA("Model") then
+                        if target.PrimaryPart then
+                            pos = target.PrimaryPart.Position
+                        else
+                            local part = target:FindFirstChildWhichIsA("BasePart")
+                            if part then pos = part.Position end
+                        end
+                    elseif target:IsA("BasePart") then
+                        pos = target.Position
+                    end
+                    if pos and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0,3,0))
+                    end
+                end
+            end
+        end,
+    })
+end
+
+-- ========== MONEY ==========
+local Tab3 = Window:CreateTab("Money")
+
+-- Auto Farm Money
+Tab3:CreateToggle({
+    Name = "Auto Farm Money",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoFarmMoney = Value
+        if Value then
+            task.spawn(function()
+                while autoFarmMoney do
+                    local moneyItems = {}
+                    if Workspace:FindFirstChild("Pickups") then
+                        for _, v in pairs(Workspace.Pickups:GetChildren()) do
+                            if v.Name == "Money" then
+                                table.insert(moneyItems, v)
+                            end
+                        end
+                    end
+
+                    if #moneyItems > 0 then
+                        local target = moneyItems[math.random(1, #moneyItems)]
+                        local pos
+                        if target:IsA("Model") then
+                            if target.PrimaryPart then
+                                pos = target.PrimaryPart.Position
+                            else
+                                local part = target:FindFirstChildWhichIsA("BasePart")
+                                if part then pos = part.Position end
+                            end
+                        elseif target:IsA("BasePart") then
+                            pos = target.Position
+                        end
+
+                        if pos and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
+                            for _, prompt in pairs(target:GetDescendants()) do
+                                if prompt:IsA("ProximityPrompt") then
+                                    task.spawn(function()
+                                        while autoFarmMoney and target.Parent do
+                                            fireproximityprompt(prompt, 1)
+                                            task.wait(0.01)
+                                        end
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end,
+})
+
+-- TP To Random Money
+Tab3:CreateButton({
+    Name = "TP To Random Money",
+    Callback = function()
+        local moneyItems = {}
+        if Workspace:FindFirstChild("Pickups") then
+            for _, v in pairs(Workspace.Pickups:GetChildren()) do
+                if v.Name == "Money" then
+                    table.insert(moneyItems, v)
+                end
+            end
+        end
+        if #moneyItems > 0 then
+            local target = moneyItems[math.random(1, #moneyItems)]
+            local pos
+            if target:IsA("Model") then
+                if target.PrimaryPart then
+                    pos = target.PrimaryPart.Position
+                else
+                    local part = target:FindFirstChildWhichIsA("BasePart")
+                    if part then pos = part.Position end
+                end
+            elseif target:IsA("BasePart") then
+                pos = target.Position
+            end
+
+            if pos and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
+            end
+        end
+    end,
+})
