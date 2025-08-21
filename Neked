@@ -1,6 +1,5 @@
 -- by Neked
 
--- подключаем библиотеку
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
@@ -8,14 +7,14 @@ local LocalPlayer = Players.LocalPlayer
 
 local Window = Rayfield:CreateWindow({
     Name = "GEF Script",
-    LoadingTitle = "великое меню гомосека",
+    LoadingTitle = "GEF ыы",
     LoadingSubtitle = "by Neked"
 })
 
--- Первая вкладка: Player
+-- Player Tab
 local Tab1 = Window:CreateTab("Player")
 
--- Бесконечный прыжок
+-- Inf Jump
 Tab1:CreateToggle({
     Name = "Inf Jump",
     CurrentValue = false,
@@ -29,7 +28,7 @@ Tab1:CreateToggle({
     end,
 })
 
--- FullBright (луп каждые 0.01с)
+-- FullBright
 Tab1:CreateToggle({
     Name = "FullBright",
     CurrentValue = false,
@@ -48,7 +47,7 @@ Tab1:CreateToggle({
     end,
 })
 
--- JumpPower Slider
+-- JumpPower
 Tab1:CreateSlider({
     Name = "JumpPower",
     Range = {1,150},
@@ -81,7 +80,7 @@ Tab1:CreateButton({
     end,
 })
 
--- Кнопка GodMode
+-- GodMode Button
 Tab1:CreateButton({
     Name = "GodMode",
     Callback = function()
@@ -102,9 +101,8 @@ Tab1:CreateButton({
     end,
 })
 
--- Вторая вкладка: Items
+-- Items Tab
 local Tab2 = Window:CreateTab("Items")
-
 local itemsList = {"Bat","Crowbar","Food","Hammer","Handgun","Lantern","Medkit","Money","Shells","Soda","Bullets","GPS","Shotgun"}
 
 for _, itemName in ipairs(itemsList) do
@@ -146,10 +144,10 @@ for _, itemName in ipairs(itemsList) do
     })
 end
 
--- Третья вкладка: Money
+-- Money Tab
 local Tab3 = Window:CreateTab("Money")
 
--- Auto Farm Money
+-- Auto Farm Money (0.0001s)
 Tab3:CreateToggle({
     Name = "Auto Farm Money",
     CurrentValue = false,
@@ -167,27 +165,30 @@ Tab3:CreateToggle({
                         end
                         if #moneyObjs > 0 then
                             local target = moneyObjs[math.random(1,#moneyObjs)]
-                            if target:IsA("BasePart") or target:IsA("Model") then
-                                local pos
-                                if target:IsA("Model") then
-                                    if target.PrimaryPart then
-                                        pos = target.PrimaryPart.Position
-                                    else
-                                        local part = target:FindFirstChildWhichIsA("BasePart")
-                                        if part then pos = part.Position end
-                                    end
+                            local pos
+                            if target:IsA("Model") then
+                                if target.PrimaryPart then
+                                    pos = target.PrimaryPart.Position
                                 else
-                                    pos = target.Position
+                                    local part = target:FindFirstChildWhichIsA("BasePart")
+                                    if part then pos = part.Position end
                                 end
-                                if pos and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0,3,0))
-                                    -- instant ProximityPrompt
-                                    for _, prompt in ipairs(target:GetDescendants()) do
-                                        if prompt:IsA("ProximityPrompt") then
-                                            pcall(function()
-                                                fireproximityprompt(prompt, 1)
-                                            end)
-                                        end
+                            elseif target:IsA("BasePart") then
+                                pos = target.Position
+                            end
+                            if pos and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0,3,0))
+                                -- instant ProximityPrompt spam
+                                for _, prompt in ipairs(target:GetDescendants()) do
+                                    if prompt:IsA("ProximityPrompt") then
+                                        task.spawn(function()
+                                            while autoFarm do
+                                                pcall(function()
+                                                    fireproximityprompt(prompt, 1)
+                                                end)
+                                                task.wait(0.0001)
+                                            end
+                                        end)
                                     end
                                 end
                             end
@@ -199,7 +200,7 @@ Tab3:CreateToggle({
                             })
                         end
                     end
-                    task.wait(0.5)
+                    task.wait(0.0001)
                 end
             end)
         end
