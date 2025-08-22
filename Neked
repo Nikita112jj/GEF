@@ -482,58 +482,6 @@ Name = "ESP GEFs",
 CurrentValue = false,
 Callback = function(on)
 espGEFsOn = on
-if not on then cleanupGEFESP()
---========================[ GET TAB ]========================
-local TabGet = Window:CreateTab("Get")
-local itemsList = {"Bat","Crowbar","Food","Hammer","Handgun","Lantern","Medkit","Money","Shells","Soda","Bullets","GPS","Shotgun"}
-
-for _, itemName in ipairs(itemsList) do
-    TabGet:CreateButton({
-        Name = "Get Instant " .. itemName,
-        Callback = function()
-            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not hrp then return end
-            local oldCFrame = hrp.CFrame
-
-            local pickups = Workspace:FindFirstChild("Pickups")
-            if pickups then
-                local candidates = {}
-                for _, v in ipairs(pickups:GetChildren()) do
-                    if v.Name == itemName then
-                        table.insert(candidates, v)
-                    end
-                end
-                if #candidates > 0 then
-                    local target = candidates[math.random(1,#candidates)]
-                    local part = target:IsA("BasePart") and target or (target.PrimaryPart or getPartFromInstance(target))
-                    if part then
-                        hrp.CFrame = CFrame.new(part.Position + Vector3.new(0,3,0))
-                        -- Instant ProximityPrompt
-                        task.spawn(function()
-                            for _,prompt in ipairs(target:GetDescendants()) do
-                                if prompt:IsA("ProximityPrompt") then
-                                    fireproximityprompt(prompt, 1)
-                                end
-                            end
-                        end)
-                        -- Телепорт обратно через 0.5 сек
-                        task.delay(0.5, function()
-                            if hrp then
-                                hrp.CFrame = oldCFrame
-                            end
-                        end)
-                    end
-                else
-                    Rayfield:Notify({
-                        Title="Ошибка",
-                        Content="На карте нету "..itemName,
-                        Duration=3
-                    })
-                end
-            end
-        end,
-    })
-end
-end
+if not on then cleanupGEFESP() end
 end
 })
