@@ -534,6 +534,3 @@ for _, itemName in ipairs(itemsList) do
         end,
     })
 end
-end
-end
-})
